@@ -2,12 +2,13 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from pydantic.v1 import BaseSettings
 
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 
-class Settings:
+class Settings(BaseSettings):
 
     USE_SQLITE_DB: str = os.getenv("USE_SQLITE_DB")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER")
@@ -18,9 +19,15 @@ class Settings:
     DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}" \
                    f"@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
     SECRET_KEY: str = os.getenv("SECRET_KEY")
+    MAILJET_API_URL: str = os.getenv("MAILJET_API_URL")
+    MAILJET_API_KEY: str = os.getenv("MAILJET_API_KEY")
+    MAILJET_SECRET_KEY: str = os.getenv("MAILJET_SECRET_KEY")
+    MAILJET_DEFAULT_EMAIL: str = os.getenv("MAILJET_DEFAULT_EMAIL")
     ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 30  # in mins
-    TEST_USER_EMAIL = "test@example.com"
+
+
+    class Config:
+        case_sensitive = True
 
 
 settings = Settings()
