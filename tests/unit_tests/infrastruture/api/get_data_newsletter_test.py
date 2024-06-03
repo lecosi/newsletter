@@ -8,7 +8,7 @@ def test_success(mocker, test_client):
     use_case = mocker.patch.object(NewsletterGetListData, 'get_all')
     newsletter_id = str(uuid.uuid4())
     newsletter_name = "boletin"
-    newsletter_list = [Newsletter(id=newsletter_id, name=newsletter_name)]
+    newsletter_list = [Newsletter(id=newsletter_id, name=newsletter_name, file=None)]
     use_case.return_value = newsletter_list
 
     response = test_client.get('/newsletter')

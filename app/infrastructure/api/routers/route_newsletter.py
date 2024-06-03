@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Request
+from typing import Annotated
+
+from fastapi import APIRouter, Request, UploadFile, Form, File
 from pydantic import BaseModel
 
 from app.application.use_cases import Subscriber, NewsletterSender, \
@@ -13,15 +15,14 @@ from app.infrastructure.repositories import SqliteSubscriptionRepository, \
 router = APIRouter()
 
 
-class NewsletterCreatorModel(BaseModel):
-    name: str
-    document_file: str = None
-
-
 @router.post('/', status_code=201)
-def create_newsletter(newsletter_create: NewsletterCreatorModel):
+def create_newsletter(
+    name: Annotated[str, Form()],
+    document_file: Annotated[UploadFile, File()] = None,
+):
     newsletter_creator = NewsletterCreator(
-        newsletter_name=newsletter_create.name,
+        newsletter_name=name,
+        document_file=document_file.file,
         newsletter_repository=SqliteNewsletterRepository()
     )
     newsletter = newsletter_creator.create()

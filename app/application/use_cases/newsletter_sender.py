@@ -14,4 +14,7 @@ class NewsletterSender:
         subscription = self._subscription_repository.get_by_newsletter_id(
             self._newsletter_id
         )
-        return self._mailing_service.send(subscription.recipients)
+        if not subscription:
+            return False
+
+        return self._mailing_service.send(subscription)

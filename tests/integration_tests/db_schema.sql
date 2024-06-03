@@ -1,7 +1,8 @@
 begin;
     create table newsletters(
         id uuid primary key,
-        name text not null
+        name text not null,
+        file_path text
     );
 
     create table subscriptions(

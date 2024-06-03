@@ -10,7 +10,8 @@ def test_newsletter_get_data(newsletter_fixture, newsletter_repository):
 
     newsletter_repository.get_all.return_value = [Newsletter(
         id=newsletter_id,
-        name=newsletter_name
+        name=newsletter_name,
+        file=None
     )]
     newsletter_creator = NewsletterGetListData(
         newsletter_repository=newsletter_repository

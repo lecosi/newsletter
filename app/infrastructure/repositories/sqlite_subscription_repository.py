@@ -67,7 +67,8 @@ class SqliteSubscriptionRepository(SubscriptionRepository):
                     s.newsletter_id,
                     s.recipient_id,
                     n.id,
-                    n.name
+                    n.name,
+                    n.file
                 from subscriptions as s
                 join newsletters as n on (n.id = s.newsletter_id)
                 where s.newsletter_id = ?
@@ -81,7 +82,11 @@ class SqliteSubscriptionRepository(SubscriptionRepository):
             recipients.append(Recipient(email=row[1]))
 
         return Subscription(
-            newsletter=Newsletter(id=rows[0][2], name=rows[0][3]),
+            newsletter=Newsletter(
+                id=rows[0][2],
+                name=rows[0][3],
+                file=rows[0][4]
+            ),
             recipients=recipients
         )
 

@@ -12,12 +12,19 @@ class SqliteNewsletterRepository(NewsletterRepository):
         self._database_path = config.get_settings().DATABASE_URL
 
     def add(self, newsletter: Newsletter) -> None:
+        if newsletter.file:
+            file = newsletter.file.filename
+        else:
+            file = None
+
         connection = sqlite3.connect(str(self._database_path))
         connection.execute(
-            "insert into newsletters (id, name) values (?, ?)",
+            "insert into newsletters (id, name, file_path) values (?, ?, ?)",
             (
                 newsletter.id,
-                newsletter.name
+                newsletter.name,
+                file
+
             )
         )
         connection.commit()
@@ -34,7 +41,8 @@ class SqliteNewsletterRepository(NewsletterRepository):
         connection.close()
         return Newsletter(
             id=row[0],
-            name=row[1]
+            name=row[1],
+            file=None
         )
 
     def get_all(self) -> Optional[List[Newsletter]]:
@@ -45,4 +53,4 @@ class SqliteNewsletterRepository(NewsletterRepository):
         )
         rows = cursor.fetchall()
         connection.close()
-        return [Newsletter(id=row[0], name=row[1]) for row in rows]
+        return [Newsletter(id=row[0], name=row[1], file=None) for row in rows]

@@ -8,7 +8,7 @@ def test_success(mocker, test_client):
     use_case = mocker.patch.object(NewsletterCreator, 'create')
     newsletter_id = str(uuid.uuid4())
     newsletter_name = "boletin"
-    newsletter = Newsletter(id=newsletter_id, name=newsletter_name)
+    newsletter = Newsletter(id=newsletter_id, name=newsletter_name, file=None)
     use_case.return_value = newsletter
 
     response = test_client.post(
