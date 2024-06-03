@@ -9,6 +9,7 @@ from app.domain.repositories import SubscriptionRepository
 
 
 class SqliteSubscriptionRepository(SubscriptionRepository):
+
     def __init__(self):
         self._database_path = config.get_settings().DATABASE_URL
 
@@ -45,6 +46,33 @@ class SqliteSubscriptionRepository(SubscriptionRepository):
                 where s.id = ?
             ''',
             (id,)
+        )
+        row = cursor.fetchone()
+        connection.close()
+        return Subscription(
+            id=row[0],
+            newsletter=Newsletter(id=row[3], name=row[4]),
+            recipients=[
+                Recipient(email=email) for email in row[2].split(',')
+            ]
+        )
+
+    def get_by_newsletter_id(self, newsletter_id) -> Optional[Subscription]:
+        connection = sqlite3.connect(str(self._database_path))
+        cursor = connection.cursor()
+        cursor.execute(
+            '''
+                select
+                    s.id,
+                    s.newsletter_id,
+                    s.recipients,
+                    n.id,
+                    n.name
+                from subscriptions as s
+                join newsletters as n on (n.id = s.newsletter_id)
+                where n.id = ?
+            ''',
+            (newsletter_id,)
         )
         row = cursor.fetchone()
         connection.close()

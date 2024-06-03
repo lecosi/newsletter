@@ -1,8 +1,4 @@
-import uuid
-from unittest.mock import MagicMock
-
 from app.application.use_cases import Subscriber
-from app.domain.entities import Newsletter
 
 
 def test_subscribe_one_email_address(subscription_repository,

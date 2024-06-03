@@ -1,13 +1,7 @@
-from unittest.mock import MagicMock
-
-from starlette.testclient import TestClient
-
 from app.application.use_cases import Subscriber
-from app.infrastructure.api.main import app
 
 
-def test_success(mocker):
-    test_client = TestClient(app)
+def test_success(mocker, test_client):
     use_case = mocker.patch.object(Subscriber, 'subscribe')
     email_recipients = ['test@test.com']
 

@@ -25,6 +25,9 @@ class SubscriptionRepository(ABC):
     def get_by_id(self, id: str) -> Optional[Subscription]:
         pass
 
+    @abstractmethod
+    def get_by_newsletter_id(self, newsletter_id) -> Optional[Subscription]:
+        pass
 
 # class UserRepository(ABC):
 #
