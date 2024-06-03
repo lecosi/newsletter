@@ -1,0 +1,2 @@
+from .sqlite_newsletter_repository import SqliteNewsletterRepository
+from .sqlite_subscription_repository import SqliteSubscriptionRepository
