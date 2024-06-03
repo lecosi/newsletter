@@ -19,7 +19,6 @@ class Subscriber:
     def subscribe(self) -> Subscription:
         newsletter = self._newsletter_repository.get_by_id(self._newsletter_id)
         subscription = Subscription(
-            id=str(uuid.uuid4()),
             recipients=[
                 Recipient(email=email) for email in self._email_addresses
             ],

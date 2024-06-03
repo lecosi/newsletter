@@ -13,12 +13,11 @@ def test_get_by_id(create_db):
     recipients = [Recipient(email='test@test.com')]
     subscription = Subscription(
         newsletter=newsletter,
-        id=str(uuid.uuid4()),
         recipients=recipients
     )
     repository.add(subscription)
 
-    fetched_subscription = repository.get_by_id(subscription.id)
+    fetched_subscription = repository.get_by_newsletter_id(newsletter.id)
 
     assert fetched_subscription == subscription
     assert fetched_subscription.recipients == subscription.recipients

@@ -13,7 +13,7 @@ def settings():
     return config.get_settings()
 
 
-@fixture(scope='session')
+@fixture
 def create_db(settings):
     path = settings.DATABASE_URL
     path.unlink(missing_ok=True)

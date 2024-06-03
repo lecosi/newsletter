@@ -1,15 +1,42 @@
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
-from app.application.use_cases import Subscriber, NewsletterSender
-from app.infrastructure.api.schemas.newsletter_schema import \
-    InputSendNewsletterModel
+from app.application.use_cases import Subscriber, NewsletterSender, \
+    Unsubscriber
+from app.application.use_cases.newsletter_creator import NewsletterCreator
+from app.application.use_cases.newsletter_get_data import NewsletterGetListData
 from app.infrastructure.mailing.mailjet_mailing_service import \
     MailjetMailingService
 from app.infrastructure.repositories import SqliteSubscriptionRepository, \
     SqliteNewsletterRepository
 
 router = APIRouter()
+
+
+class NewsletterCreatorModel(BaseModel):
+    name: str
+    document_file: str = None
+
+
+@router.post('/', status_code=201)
+def create_newsletter(newsletter_create: NewsletterCreatorModel):
+    newsletter_creator = NewsletterCreator(
+        newsletter_name=newsletter_create.name,
+        newsletter_repository=SqliteNewsletterRepository()
+    )
+    newsletter = newsletter_creator.create()
+    return {
+        'id': newsletter.id,
+        'name': newsletter.name
+    }
+
+
+@router.get('/', status_code=200)
+def get_newsletter_list():
+    newsletter_get_data = NewsletterGetListData(
+        newsletter_repository=SqliteNewsletterRepository()
+    )
+    return newsletter_get_data.get_all()
 
 
 @router.post('/send')
@@ -37,4 +64,15 @@ def subscribe_handler(request: Request, subscription_body: SubscriptionBody):
         newsletter_repository=SqliteNewsletterRepository()
     )
     subscriber.subscribe()
+    return {}
+
+
+@router.post('/unsubscription')
+async def unsubscribe_handler(request: Request):
+    body = await request.json()
+    subscriber = Unsubscriber(
+        recipient_email=body.get('email_recipient'),
+        subscription_repository=SqliteSubscriptionRepository(),
+    )
+    subscriber.unsubscribe()
     return {}
