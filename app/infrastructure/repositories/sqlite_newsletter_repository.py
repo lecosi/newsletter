@@ -12,6 +12,7 @@ class SqliteNewsletterRepository(NewsletterRepository):
         self._database_path = config.get_settings().DATABASE_URL
 
     def add(self, newsletter: Newsletter) -> None:
+
         if newsletter.file:
             file = newsletter.file.filename
         else:

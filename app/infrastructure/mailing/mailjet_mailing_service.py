@@ -12,7 +12,6 @@ class MailjetMailingService(MailingService):
 
     def send(self, subscription: Subscription) -> bool:
         settings = config.get_settings()
-        recipients = subscription.recipients
         file = subscription.newsletter.file
         attachments = None
 
@@ -20,35 +19,39 @@ class MailjetMailingService(MailingService):
             loader=FileSystemLoader("app/infrastructure/templates")
         )
         template = environment.get_template("newsletter_email.html")
-        unsubscribe_link = ''
-        html_content = template.render(unsubscribe_link=unsubscribe_link)
-
         if file:
-            filename = file.filename
-            encoded_file = base64.b64encode(file)
+            with open(f'app/infrastructure/statics/{file}', mode='rb') as f:
+                encoded_file = base64.b64encode(f.read())
             attachments = [
                 {
                     "Content-type": "text/plain",
-                    "Filename": filename,
-                    "content": encoded_file
+                    "Filename": file,
+                    "content": encoded_file.decode()
                 }
             ]
 
-        data = {
-            'FromEmail': settings.MAILJET_DEFAULT_EMAIL,
-            'FromName': "Boletin",
-            'Recipients': [
-                {'Email': recipient.email for recipient in recipients}
-            ],
-            'Subject': 'test',
-            'Html-part': html_content,
-            'SandboxMode': True,
-            "Attachments": attachments
-        }
-        response = requests.post(
-            settings.MAILJET_API_URL,
-            auth=(settings.MAILJET_API_KEY, settings.MAILJET_SECRET_KEY),
-            headers={'Accept': 'application/json'},
-            json=data
-        )
-        return response.ok
+        was_ok = True
+        for recipient in subscription.recipients:
+            unsubscribe_link = f'http://127.0.0.1:8000/newsletter/unsubscription/{recipient.email}'
+            html_content = template.render(unsubscribe_link=unsubscribe_link)
+
+            data = {
+                'FromEmail': settings.MAILJET_DEFAULT_EMAIL,
+                'FromName': "Boletin",
+                'Recipients': [
+                    {'Email': recipient.email}
+                ],
+                'Subject': 'test',
+                'Html-part': html_content,
+                'SandboxMode': False,
+                "Attachments": attachments
+            }
+            response = requests.post(
+                settings.MAILJET_API_URL,
+                auth=(settings.MAILJET_API_KEY, settings.MAILJET_SECRET_KEY),
+                headers={'Accept': 'application/json'},
+                json=data
+            )
+            if response.ok is False:
+                was_ok = False
+        return was_ok

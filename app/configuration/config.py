@@ -23,7 +23,7 @@ class Settings:
 
 
 class TestSettings(Settings):
-    DATABASE_URL = Settings.ROOT_PATH / 'db.sql'
+    DATABASE_URL = Settings.ROOT_PATH / 'db_test.sql'
 
 
 def get_settings() -> Settings:

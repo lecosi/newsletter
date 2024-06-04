@@ -22,6 +22,10 @@ class SqliteSubscriptionRepository(SubscriptionRepository):
                 subscription.newsletter.id,
                 recipient.email
             ))
+            connection.execute(
+                'insert into recipients (email) values (?)',
+                (recipient.email,)
+            )
 
         connection.executemany(
             "insert into subscriptions (id, newsletter_id, recipient_id) "
@@ -34,6 +38,7 @@ class SqliteSubscriptionRepository(SubscriptionRepository):
     def get_by_id(self, id: str) -> Optional[Subscription]:
         connection = sqlite3.connect(str(self._database_path))
         cursor = connection.cursor()
+
         cursor.execute(
             '''
                 select
@@ -68,7 +73,7 @@ class SqliteSubscriptionRepository(SubscriptionRepository):
                     s.recipient_id,
                     n.id,
                     n.name,
-                    n.file
+                    n.file_path
                 from subscriptions as s
                 join newsletters as n on (n.id = s.newsletter_id)
                 where s.newsletter_id = ?
@@ -97,8 +102,9 @@ class SqliteSubscriptionRepository(SubscriptionRepository):
             """
                 delete  
                 from subscriptions
-                where recipient_id = '?'
+                where recipient_id = ?
             """,
             (recipient_email, )
         )
+        connection.commit()
         connection.close()

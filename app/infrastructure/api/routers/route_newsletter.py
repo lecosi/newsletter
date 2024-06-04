@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Request, UploadFile, Form, File
+from fastapi import APIRouter, Request, UploadFile, Form, File, HTTPException
 from pydantic import BaseModel
 
 from app.application.use_cases import Subscriber, NewsletterSender, \
@@ -18,14 +18,25 @@ router = APIRouter()
 @router.post('/', status_code=201)
 def create_newsletter(
     name: Annotated[str, Form()],
+    recipients: Annotated[str, Form()],
     document_file: Annotated[UploadFile, File()] = None,
+
 ):
+    formatted_recipients = recipients.strip().split(',')
     newsletter_creator = NewsletterCreator(
         newsletter_name=name,
-        document_file=document_file.file,
+        document_file=document_file,
         newsletter_repository=SqliteNewsletterRepository()
     )
     newsletter = newsletter_creator.create()
+    subscriber = Subscriber(
+        newsletter_id=newsletter.id,
+        email_addresses=formatted_recipients,
+        subscription_repository=SqliteSubscriptionRepository(),
+        newsletter_repository=SqliteNewsletterRepository()
+    )
+    subscriber.subscribe()
+
     return {
         'id': newsletter.id,
         'name': newsletter.name
@@ -68,12 +79,17 @@ def subscribe_handler(request: Request, subscription_body: SubscriptionBody):
     return {}
 
 
-@router.post('/unsubscription')
-async def unsubscribe_handler(request: Request):
-    body = await request.json()
-    subscriber = Unsubscriber(
-        recipient_email=body.get('email_recipient'),
-        subscription_repository=SqliteSubscriptionRepository(),
-    )
-    subscriber.unsubscribe()
-    return {}
+@router.get('/unsubscription/{email_recipient}')
+def unsubscribe_handler(email_recipient):
+    try:
+        subscriber = Unsubscriber(
+            recipient_email=email_recipient,
+            subscription_repository=SqliteSubscriptionRepository(),
+        )
+        subscriber.unsubscribe()
+    except Exception:
+        return HTTPException(
+            status_code=500,
+            detail='Error unsubscription email'
+        )
+    return {'unsubscription': True}
